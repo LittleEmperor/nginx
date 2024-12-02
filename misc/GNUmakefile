@@ -6,8 +6,8 @@ TEMP =		tmp
 
 CC =		cl
 OBJS =		objs.msvc8
-OPENSSL =	openssl-1.1.1t
-ZLIB =		zlib-1.2.13
+OPENSSL =	openssl-3.0.15
+ZLIB =		zlib-1.3.1
 PCRE =		pcre2-10.39
 
 
@@ -15,8 +15,6 @@ release: export
 
 	mv $(TEMP)/$(NGINX)/auto/configure $(TEMP)/$(NGINX)
 
-	mv $(TEMP)/$(NGINX)/docs/text/LICENSE $(TEMP)/$(NGINX)
-	mv $(TEMP)/$(NGINX)/docs/text/README $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/html $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/man $(TEMP)/$(NGINX)
 
@@ -30,12 +28,12 @@ release: export
 
 export:
 	rm -rf $(TEMP)
-	hg archive -X '.hg*' $(TEMP)/$(NGINX)
+	git archive --prefix=$(TEMP)/$(NGINX)/ HEAD | tar -x -f - --exclude '.git*'
 
 
 RELEASE:
-	hg ci -m nginx-$(VER)-RELEASE
-	hg tag -m "release-$(VER) tag" release-$(VER)
+	git commit -m nginx-$(VER)-RELEASE
+	git tag -m "release-$(VER) tag" release-$(VER)
 
 	$(MAKE) -f misc/GNUmakefile release
 
@@ -93,8 +91,8 @@ zip: export
 
 	sed -i '' -e "s/$$/`printf '\r'`/" $(TEMP)/$(NGINX)/conf/*
 
-	mv $(TEMP)/$(NGINX)/docs/text/LICENSE $(TEMP)/$(NGINX)/docs.new
-	mv $(TEMP)/$(NGINX)/docs/text/README $(TEMP)/$(NGINX)/docs.new
+	mv $(TEMP)/$(NGINX)/LICENSE $(TEMP)/$(NGINX)/docs.new
+	mv $(TEMP)/$(NGINX)/README.md $(TEMP)/$(NGINX)/docs.new
 	mv $(TEMP)/$(NGINX)/docs/html $(TEMP)/$(NGINX)
 
 	rm -r $(TEMP)/$(NGINX)/docs
@@ -105,7 +103,7 @@ zip: export
 	$(MAKE) -f docs/GNUmakefile changes
 	mv $(TEMP)/$(NGINX)/CHANGES* $(TEMP)/$(NGINX)/docs/
 
-	cp -p $(OBJS)/lib/$(OPENSSL)/LICENSE				\
+	cp -p $(OBJS)/lib/$(OPENSSL)/LICENSE.txt			\
 		$(TEMP)/$(NGINX)/docs/OpenSSL.LICENSE
 
 	cp -p $(OBJS)/lib/$(PCRE)/LICENCE				\
